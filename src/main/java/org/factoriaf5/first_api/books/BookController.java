@@ -3,12 +3,13 @@ package org.factoriaf5.first_api.books;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/org/factoriaf5/first_api/books")
+@RequestMapping("/books")
 public class BookController {
 
     private final InMemoryBookRepository bookRepository;
@@ -35,7 +36,10 @@ public class BookController {
 
     @PostMapping
     public Book createBook(@RequestBody Book book) {
-
+        Optional<Book> optionalBook = bookRepository.findByIsbn(book.getIsbn());
+        if (optionalBook.isPresent()) {
+           throw new ResponseStatusException( HttpStatus.BAD_REQUEST);  //NO EXISTE 400
+        }
         // comprobar que no existe el isbn si existe return (bad_request)
 
         bookRepository.save(book);
@@ -50,5 +54,32 @@ public class BookController {
     }
 
     // Update -> modificar un libro por su isbn (PUT)
+
+    @PutMapping("/{isbn}")
+    public ResponseEntity <String> updateBook (@PathVariable String isbn , @RequestBody Book book) {
+
+        //buscar libro existente por su isbn
+
+        Optional<Book> optionalBook = bookRepository.findByIsbn(isbn);
+
+        if (optionalBook.isPresent()) {
+            Book existingBook = optionalBook.get();
+
+            //actualizar los campos del libro existente con los valores del libro actualizado
+            existingBook.setTittle(book.getTittle());
+            existingBook.setAuthor(book.getAuthor());
+            existingBook.setIsbn(book.getIsbn());
+            //guardar los cambios en el repositorio
+            bookRepository.update(existingBook);
+            // respuesta con exito
+            return new ResponseEntity<>("Libro actualizado correctamente", HttpStatus.OK);
+        }
+            //SI NO SE ENCUENTRA EL LIBRO , RETORNAR UN ERROR 404
+            return new ResponseEntity<>("libro no encontrado", HttpStatus.NOT_FOUND);
+
+
+
+    }
+
 
 }

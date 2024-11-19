@@ -23,4 +23,16 @@ public class Book {
     public String getAuthor() {
         return author;
     }
+
+    public void setTittle(String tittle) {
+        this.tittle = tittle;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
 }
